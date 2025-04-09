@@ -27,9 +27,7 @@ export function searchCustomers(query: string): Promise<Customer[]> {
   });
 }
 
-export function getCustomerDetail(
-  customerId: string
-): Promise<Customer | null> {
+export function getCustomerDetail(customerId: string): Promise<Customer | null> {
   return prisma.customer.findFirst({
     where: { id: customerId },
   });

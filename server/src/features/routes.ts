@@ -15,5 +15,5 @@ apiRouter.use("/orders", ordersRouter);
 export const routes = express.Router();
 routes.use("/api", apiRouter);
 routes.get("/", (req, res) => {
-  res.status(200).send("<h1>Server is ready!</h1>");
+  res.status(200).send("<h1>Server is ready, Oh Yeah!</h1>");
 });
