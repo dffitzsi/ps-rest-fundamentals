@@ -1,7 +1,9 @@
 import express from "express";
-import { getCustomers, getCustomerDetail, searchCustomers } from "./customers.service";
+import { getCustomers, getCustomerDetail, searchCustomers, upsertCustomer } from "./customers.service";
 import { getOrdersForCustomer } from "../orders/orders.service";
 import { resolve } from "path";
+import { validate } from "../../middleware/validation.middleware";
+import { customerPOSTRequestSchema, idUUIDRequestSchema } from "../types";
 
 export const customersRouter = express.Router();
 
@@ -10,9 +12,9 @@ customersRouter.get("/", async (req, res) => {
     res.json(customers);
 });
 
-customersRouter.get("/:id", async (req, res) => {
-    const id = req.params.id;
-    const customer = await getCustomerDetail(id);
+customersRouter.get("/:id", validate(idUUIDRequestSchema), async (req, res) => {
+    const data = idUUIDRequestSchema.parse(req);
+    const customer = await getCustomerDetail(data.params.id);
     if (customer != null){
         res.json(customer);
     } else{
@@ -34,4 +36,14 @@ customersRouter.get("/search/:query", async (req, res) =>{
     const query = req.params.query
     const customers = await searchCustomers(query);
     res.json(customers);
+});
+
+customersRouter.post("/",validate(customerPOSTRequestSchema), async (req, res) =>{
+    const data = customerPOSTRequestSchema.parse(req);
+    const customer = await upsertCustomer(data.body)
+    if (customer != null){
+        res.status(201).json(customer);
+    } else {
+        res.status(500).json({message: "Customer creation failed"});
+    }
 });

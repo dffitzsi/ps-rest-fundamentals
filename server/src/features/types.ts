@@ -107,7 +107,9 @@ export const orderPUTRequestSchema = idUUIDRequestSchema.merge(
 
 export const orderItemsDTORequestSchema = z.object({
   params: z.object({ id: z.string().uuid() }),
-  body: z.array(orderItemDTO),
+  body: z.object({
+    items: z.array(orderItemDTO),
+  }) 
 });
 
 export type OrderDTO = z.infer<typeof orderDTO>;
