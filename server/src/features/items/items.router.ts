@@ -1,7 +1,7 @@
 import express from "express";
-import { getItemDetail, getItems, upsertItem } from "./items.service";
+import { deleteItem, getItemDetail, getItems, upsertItem } from "./items.service";
 import { validate } from "../../middleware/validation.middleware";
-import { idNumberRequestSchema, idUUIDRequestSchema, itemPOSTRequestSchema } from "../types";
+import { idNumberRequestSchema, idUUIDRequestSchema, itemPOSTRequestSchema, itemPUTRequestSchema } from "../types";
 
 export const itemsRouter = express.Router();
 
@@ -35,7 +35,28 @@ itemsRouter.post("/", validate(itemPOSTRequestSchema), async (req, res) =>{
      res.status(500).json({message: "Item creation failed"});
      }
   }
-)
+);
+
+itemsRouter.delete("/:id", validate(idNumberRequestSchema), async (req, res) =>{
+  const data = idNumberRequestSchema.parse(req);
+  const item = await deleteItem(data.params.id);
+  if (item != null){
+    res.status(201).json(item);
+  } else {
+    res.status(500).json({message: "Item not Found"});
+  }
+});
+
+itemsRouter.put("/:id", validate(itemPUTRequestSchema), async(req, res,) =>{
+  const data = itemPUTRequestSchema.parse(req);
+  const item = await upsertItem(data.body, data.params.id);
+  if (item != null){
+    res.status(201).json({message: item + "was updated"});
+  } else {
+    res.status(404).json({message: "Item update failed"});
+  }
+});
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function buildImageUrl(req: any, id: number): string {

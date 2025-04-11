@@ -1,7 +1,7 @@
 import express from "express";
-import { addOrderItems, getOrderDetail, getOrders, upsertOrder } from "./orders.service";
+import { addOrderItems, deleteOrder, deleteOrderItem, getOrderDetail, getOrders, upsertOrder } from "./orders.service";
 import { validate } from "../../middleware/validation.middleware";
-import { idUUIDRequestSchema, orderItemsDTORequestSchema, orderPOSTRequestSchema, pagingRequestSchema } from "../types";
+import { idItemIdUUIDRequestSchema, idNumberRequestSchema, idUUIDRequestSchema, orderItemsDTORequestSchema, orderPOSTRequestSchema, orderPUTRequestSchema, pagingRequestSchema } from "../types";
 
 export const ordersRouter = express.Router();
 
@@ -38,3 +38,38 @@ ordersRouter.post("/:id/items", validate(orderItemsDTORequestSchema), async (req
         res.status(500).json({message: "Order items Addition failed"});
     }
 });
+ordersRouter.delete("/:id", validate(idUUIDRequestSchema), async (req, res) =>{
+    const data = idUUIDRequestSchema.parse(req);
+    const order = await deleteOrder(data.params.id);
+    if (order != null){
+        res.status(201).json(order);
+    } else {
+        res.status(500).json({message: "Order deletion failed"});
+    }
+});
+ordersRouter.delete(
+    "/id:/items/:itemId", 
+    validate(idItemIdUUIDRequestSchema),
+    async (req, res) => {
+        const data = idItemIdUUIDRequestSchema.parse(req);
+        const order = await deleteOrderItem(data.params.id, data.params.itemId);
+        if (order !=null){
+            res.status(201).json(order);
+        } else {
+            res.status(404).json({message: "Order item not found"}); 
+        }
+});
+
+ordersRouter.put(
+    "/:id",
+    validate(orderPUTRequestSchema), 
+    async (req, res) => {
+        const data = orderPUTRequestSchema.parse(req);
+        const orderData = {customerId: "", ...data.body };
+        const order = await upsertOrder(orderData, data.params.id);
+        if (order != null){
+            res.status(201).json(order);
+        } else {
+            res.status(404).json({message: "Order Not Found"});
+        }       
+    })

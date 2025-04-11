@@ -1,7 +1,6 @@
 import express from "express";
-import { getCustomers, getCustomerDetail, searchCustomers, upsertCustomer } from "./customers.service";
+import { getCustomers, getCustomerDetail, searchCustomers, upsertCustomer, deleteCustomer } from "./customers.service";
 import { getOrdersForCustomer } from "../orders/orders.service";
-import { resolve } from "path";
 import { validate } from "../../middleware/validation.middleware";
 import { customerPOSTRequestSchema, idUUIDRequestSchema } from "../types";
 
@@ -47,3 +46,12 @@ customersRouter.post("/",validate(customerPOSTRequestSchema), async (req, res) =
         res.status(500).json({message: "Customer creation failed"});
     }
 });
+customersRouter.delete("/:id", validate(idUUIDRequestSchema), async (req, res) =>{
+    const data = idUUIDRequestSchema.parse(req);
+    const customer = await deleteCustomer(data.params.id);
+    if (customer != null){
+        res.status(201).json(customer);
+    } else {
+        res.status(500).json({message: "Customer deletion failed"});
+    }
+})
